@@ -45,29 +45,36 @@ class TTSMixer:
         """Initialize TTSMixer with optional ffmpeg path."""
         self.ffmpeg_path = ffmpeg_path or self._find_ffmpeg()
         if not self.ffmpeg_path:
-            raise RuntimeError("ffmpeg not found. Please install it.")
+            raise RuntimeError(
+                "ffmpeg.exe not found!\n"
+                "Please ensure ffmpeg.exe is in the same folder as this application.\n"
+                "Download from: https://www.gyan.dev/ffmpeg/builds/"
+            )
     
     @staticmethod
     def _find_ffmpeg() -> Optional[str]:
-        """Locate ffmpeg executable on the system."""
+        """Locate ffmpeg executable. Checks bundled version first, then system."""
+        
+        # Check if running as PyInstaller executable
+        if getattr(sys, 'frozen', False):
+            exe_dir = os.path.dirname(sys.executable)
+            bundled_ffmpeg = os.path.join(exe_dir, "ffmpeg.exe")
+            if os.path.exists(bundled_ffmpeg):
+                logger.info(f"Using bundled ffmpeg: {bundled_ffmpeg}")
+                return bundled_ffmpeg
+        
+        # Check same directory as script (development/distribution folder)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        local_ffmpeg = os.path.join(script_dir, "ffmpeg.exe")
+        if os.path.exists(local_ffmpeg):
+            logger.info(f"Using local ffmpeg: {local_ffmpeg}")
+            return local_ffmpeg
+        
+        # Fallback: Check system PATH
         ffmpeg_cmd = shutil.which("ffmpeg")
         if ffmpeg_cmd:
+            logger.info(f"Using system ffmpeg: {ffmpeg_cmd}")
             return ffmpeg_cmd
-        
-        if sys.platform == "win32":
-            import glob
-            user_home = os.path.expanduser("~")
-            paths = [
-                os.path.join(user_home, "AppData", "Local", "Microsoft", 
-                           "WinGet", "Packages", "Gyan.FFmpeg*", "**", 
-                           "bin", "ffmpeg.exe"),
-                "C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe",
-                "C:\\ffmpeg\\bin\\ffmpeg.exe",
-            ]
-            for pattern in paths:
-                found = glob.glob(pattern, recursive=True)
-                if found:
-                    return found[0]
         
         return None
     
@@ -110,13 +117,20 @@ class TTSMixer:
         ]
         
         try:
-            script_dir = os.path.dirname(os.path.abspath(__file__))
+            # Determine working directory (handles both .py and .exe)
+            if getattr(sys, 'frozen', False):
+                # Running as compiled .exe
+                work_dir = os.path.dirname(sys.executable)
+            else:
+                # Running as .py script
+                work_dir = os.path.dirname(os.path.abspath(__file__))
+            
             result = subprocess.run(
                 ffmpeg_cmd, 
                 capture_output=True, 
                 text=True, 
                 check=True, 
-                cwd=script_dir
+                cwd=work_dir
             )
             logger.info(f"Mixed audio saved: {output_file}")
             return Path(output_file)
