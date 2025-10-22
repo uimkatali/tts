@@ -22,6 +22,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Output folder for final mixed audio files
+OUTPUT_FOLDER = "output"
+
 
 @dataclass
 class AudioJob:
@@ -145,11 +148,16 @@ class TTSMixer:
         tts_file = self.generate_tts(job.text, job.language, job.output_filename)
         
         if job.background_sound:
-            mixed_filename = f"mixed_{job.output_filename}"
+            # Create output folder if it doesn't exist
+            output_folder = Path(OUTPUT_FOLDER)
+            output_folder.mkdir(exist_ok=True)
+            
+            # Save mixed file in the output folder
+            mixed_filename = output_folder / f"mixed_{job.output_filename}"
             mixed_file = self.mix_audio(
                 str(tts_file),
                 job.background_sound,
-                mixed_filename,
+                str(mixed_filename),
                 job.background_volume
             )
             return tts_file, mixed_file
