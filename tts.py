@@ -22,8 +22,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Output folder for final mixed audio files
+# Output folders for generated audio files
 OUTPUT_FOLDER = "output"
+TTS_OUTPUT_FOLDER = "output/TTS"
+MIXED_OUTPUT_FOLDER = "output/MIXED"
 # Input folder for config and background sounds
 INPUT_FOLDER = "input"
 
@@ -147,7 +149,13 @@ class TTSMixer:
         """Process a single audio job."""
         logger.info(f"Processing: {job.text[:50]}...")
         
-        tts_file = self.generate_tts(job.text, job.language, job.output_filename)
+        # Create output subfolders if they don't exist
+        tts_folder = Path(TTS_OUTPUT_FOLDER)
+        tts_folder.mkdir(parents=True, exist_ok=True)
+        
+        # Save TTS file to output/TTS/ folder
+        tts_filename = tts_folder / job.output_filename
+        tts_file = self.generate_tts(job.text, job.language, str(tts_filename))
         
         if job.background_sound:
             # Resolve background sound path relative to input folder if not absolute
@@ -158,12 +166,14 @@ class TTSMixer:
                 if input_relative_path.exists():
                     bg_sound_path = input_relative_path
             
-            # Create output folder if it doesn't exist
-            output_folder = Path(OUTPUT_FOLDER)
-            output_folder.mkdir(exist_ok=True)
+            # Create MIXED output folder if it doesn't exist
+            mixed_folder = Path(MIXED_OUTPUT_FOLDER)
+            mixed_folder.mkdir(parents=True, exist_ok=True)
             
-            # Save mixed file in the output folder
-            mixed_filename = output_folder / f"mixed_{job.output_filename}"
+            # Save mixed file in the output/MIXED/ folder with "mixed_" prefix
+            filename_base = Path(job.output_filename).stem
+            filename_ext = Path(job.output_filename).suffix
+            mixed_filename = mixed_folder / f"mixed_{filename_base}{filename_ext}"
             mixed_file = self.mix_audio(
                 str(tts_file),
                 str(bg_sound_path),

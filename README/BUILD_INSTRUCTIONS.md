@@ -56,10 +56,12 @@ pyinstaller --onefile --console --name "TTS-Audio-Mixer" --icon=app_icon.ico tts
 2. Ensure required folders exist:
    - `dependencies/` with `ffmpeg.exe`
    - `input/` with `config.json` and background sound files
-   - `output/` folder (will be created automatically if missing)
+   - `output/` folder (will be created automatically with TTS/ and MIXED/ subfolders)
 3. Run `TTS-Audio-Mixer.exe`
 4. Verify it finds ffmpeg.exe in the dependencies folder
 5. Verify it reads config from the input folder
 6. Test generating audio files
-7. Check that mixed files are saved in the `output/` folder
+7. Check that files are saved:
+   - TTS files in `output/TTS/`
+   - Mixed files in `output/MIXED/`
 8. Test with different settings in `input/config.json`

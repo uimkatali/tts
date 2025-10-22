@@ -8,7 +8,9 @@ tts/
 ├── input/                    # User input files
 │   ├── config.json          # Configuration file
 │   └── *.wav, *.mp3         # Background sound files
-├── output/                   # Generated mixed audio files
+├── output/                   # Generated audio files
+│   ├── TTS/                 # TTS-only audio files
+│   └── MIXED/               # Mixed audio files (TTS + background)
 ├── dependencies/             # External dependencies
 │   └── ffmpeg.exe           # Audio processing binary
 ├── dist/                     # Build output (can be deleted)
@@ -122,8 +124,8 @@ Each audio job in `config.json` supports:
 
 ## Output Files
 
-- **TTS only file**: `<output_filename>.mp3` (saved in root directory)
-- **Mixed file**: `output/mixed_<output_filename>.mp3` (TTS + background, saved in output/ folder)
+- **TTS only file**: `output/TTS/<output_filename>.mp3` (speech without background)
+- **Mixed file**: `output/MIXED/<output_filename>.mp3` (TTS + background sound)
 
 ## Supported Languages
 

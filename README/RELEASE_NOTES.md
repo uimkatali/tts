@@ -23,13 +23,17 @@
 - `input/` - Put your config.json and sound files here
   - `config.json` - Configuration file
   - `breach_alarm_994.wav` - Sample background sound
-- `output/` - Generated mixed audio files
+- `output/` - Generated audio files
+  - `TTS/` - TTS-only audio files (speech without background)
+  - `MIXED/` - Mixed audio files (speech + background sound)
 - `dependencies/` - Contains ffmpeg.exe
 
 ## Changes in v3.0
 - Reorganized folder structure (input/, output/, dependencies/)
+- Separated output into TTS/ and MIXED/ subfolders for better organization
 - Improved user experience - clearer file organization
 - Background sounds automatically resolved from input/ folder
+- Clean root directory - no more MP3 files cluttering the main folder
 - Better documentation with clear folder structure
 
 ## Changes in v2.0
