@@ -22,13 +22,13 @@ This guide explains how to create a distributable .exe from the Python source co
 ### Step-by-Step Build Process
 
 ```powershell
-# 1. Build the executable (takes ~30-40 seconds)
+# 1. Build the executable 
 pyinstaller --onefile --console --name "TTS-Audio-Mixer" tts.py
 
 # 2. Copy new .exe to main folder
 Copy-Item dist\TTS-Audio-Mixer.exe . -Force
 
-# 3. (Optional) Test the new .exe
+# 3. Test the new .exe
 .\TTS-Audio-Mixer.exe --config config.json
 ```
 
