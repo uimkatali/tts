@@ -24,6 +24,8 @@ logger = logging.getLogger(__name__)
 
 # Output folder for final mixed audio files
 OUTPUT_FOLDER = "output"
+# Input folder for config and background sounds
+INPUT_FOLDER = "input"
 
 
 @dataclass
@@ -50,7 +52,7 @@ class TTSMixer:
         if not self.ffmpeg_path:
             raise RuntimeError(
                 "ffmpeg.exe not found!\n"
-                "Please ensure ffmpeg.exe is in the same folder as this application.\n"
+                "Please ensure ffmpeg.exe is in the 'dependencies' folder.\n"
                 "Download from: https://www.gyan.dev/ffmpeg/builds/"
             )
     
@@ -61,14 +63,14 @@ class TTSMixer:
         # Check if running as PyInstaller executable
         if getattr(sys, 'frozen', False):
             exe_dir = os.path.dirname(sys.executable)
-            bundled_ffmpeg = os.path.join(exe_dir, "ffmpeg.exe")
+            bundled_ffmpeg = os.path.join(exe_dir, "dependencies", "ffmpeg.exe")
             if os.path.exists(bundled_ffmpeg):
                 logger.info(f"Using bundled ffmpeg: {bundled_ffmpeg}")
                 return bundled_ffmpeg
         
         # Check same directory as script (development/distribution folder)
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        local_ffmpeg = os.path.join(script_dir, "ffmpeg.exe")
+        local_ffmpeg = os.path.join(script_dir, "dependencies", "ffmpeg.exe")
         if os.path.exists(local_ffmpeg):
             logger.info(f"Using local ffmpeg: {local_ffmpeg}")
             return local_ffmpeg
@@ -148,6 +150,14 @@ class TTSMixer:
         tts_file = self.generate_tts(job.text, job.language, job.output_filename)
         
         if job.background_sound:
+            # Resolve background sound path relative to input folder if not absolute
+            bg_sound_path = Path(job.background_sound)
+            if not bg_sound_path.is_absolute() and not bg_sound_path.exists():
+                # Only prepend INPUT_FOLDER if path doesn't exist as-is
+                input_relative_path = Path(INPUT_FOLDER) / job.background_sound
+                if input_relative_path.exists():
+                    bg_sound_path = input_relative_path
+            
             # Create output folder if it doesn't exist
             output_folder = Path(OUTPUT_FOLDER)
             output_folder.mkdir(exist_ok=True)
@@ -156,7 +166,7 @@ class TTSMixer:
             mixed_filename = output_folder / f"mixed_{job.output_filename}"
             mixed_file = self.mix_audio(
                 str(tts_file),
-                job.background_sound,
+                str(bg_sound_path),
                 str(mixed_filename),
                 job.background_volume
             )
@@ -197,7 +207,7 @@ def main():
     parser.add_argument(
         '--config',
         type=str,
-        default='config.json',
+        default='input/config.json',
         help='Path to JSON configuration file'
     )
     parser.add_argument(
